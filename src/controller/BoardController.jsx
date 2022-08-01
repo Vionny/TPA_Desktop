@@ -46,3 +46,8 @@ export function setBoardStatus(boardid,status){
       BoardStatus : status
    })
 }
+export function AddNewListtoBoard(listid,boardid){
+   updateDoc(doc(getfstore,'Boards',boardid),{
+     BoardList : arrayUnion(listid)
+   })
+ }

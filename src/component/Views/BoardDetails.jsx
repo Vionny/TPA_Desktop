@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Button, Container, ListGroup, Modal, Nav, Navbar, Table } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { boardAddress, LeaveBoard, setBoardStatus, setBoardVisibility } from "../../controller/BoardController";
+import { CreateNewList } from "../../controller/ListController";
 import { UserInviteNotification, usersAddress } from "../../controller/UserController";
 import { getfstore } from "../../fbase/fbaseimport";
 import { UseCurrUser } from "../LoginRegister/Auth"
@@ -23,7 +24,20 @@ export const BoardDetailsPage=()=>{
     const [userids,setUserIds] = useState({})
     const [view,setView]=useState('')
     const goHome = useNavigate()
-
+    const [boardList,setBoardList] = useState({})
+    const [list,setList] = useState({})
+    useEffect(()=>{
+        getDoc(doc(getfstore,'Boards',boardid)).then((doc)=>{
+            
+            const board1 = doc.data()
+            setBoard(board1)
+            // console.log(board1)
+            setBoardAdmins(board1.BoardAdminID)
+            setBoardMembers(board1.BoardMemberID)
+            setBoardList(board1.BoardList)
+            setLoadBd(false)
+        })
+    },[!loadBd])
     useEffect(()=>{
         getDoc(doc(getfstore,'Boards',boardid)).then((doc)=>{
             
@@ -35,7 +49,17 @@ export const BoardDetailsPage=()=>{
             setLoadBd(false)
         })
     },[!loadBd])
-
+    useEffect(()=>{
+        const list = []
+        for(let i =0;i<boardList.length;i++){
+            getDoc(doc(getfstore,'List',boardList.index(i).then((doc)=>{
+                list.push({
+                    ...doc.data(),id:doc.id
+                })
+            })))
+        }
+        setList(list)
+    })
     useEffect(()=>{
         let q = query(usersAddress);
         const user = [];
@@ -77,12 +101,25 @@ export const BoardDetailsPage=()=>{
            console.log(error)
         }
       }
+      
+    let nameInput
+
+    const handleCreate = ()=>{
+        if(nameInput!==''){
+            CreateNewList(boardid,nameInput)
+            setLoadBd(true)
+            setShow(false);
+        }
+    }
+  
     if(!loadUs&&!loadBd){
         let valid = ""
             if(board.BoardAdminID.includes(curruserid)){
                 
                 valid="admin"
             } 
+
+    
     return <div>
         <Navbar bg="light" expand="lg">
             <Container>
@@ -91,7 +128,7 @@ export const BoardDetailsPage=()=>{
                 <Navbar.Collapse id="basic-navbar-nav">
                 <Nav className="me-auto">
                     <Nav.Link onClick={()=>{setView('ViewAllMembers')}}>View All Members</Nav.Link>
-                    <Nav.Link onClick={()=>{setView('ViewWorkspaceBoard')}}>View All List</Nav.Link>
+                    <Nav.Link onClick={()=>{setView('ViewAllList')}}>View All List</Nav.Link>
                     
                 </Nav>
                 </Navbar.Collapse>
@@ -252,6 +289,29 @@ export const BoardDetailsPage=()=>{
             })}
                  </tbody>
             </Table>
+        </div>}
+        {view==='ViewAllList'&&<div>
+        <div>
+            <Button variant="primary" onClick={handleShow}>Create List +</Button>
+        </div>
+            <Modal show={show} onHide={handleClose}>
+                <Modal.Header closeButton>
+                <Modal.Title>Create New List</Modal.Title>
+                </Modal.Header>
+                <Modal.Body><div>
+                    <p>List Name</p>
+                    <input onChange={(e)=>{nameInput= e.target.value}} type="text" placeholder="List Name"></input>
+                    </div></Modal.Body>
+                <Modal.Footer>
+                <Button variant="secondary" onClick={handleClose}>
+                    Close
+                </Button>
+                <Button variant="primary" onClick={handleCreate}>
+                    Create
+                </Button>
+                </Modal.Footer>
+            </Modal>
+            
         </div>}
     </div>
     }

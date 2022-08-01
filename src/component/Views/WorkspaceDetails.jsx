@@ -101,22 +101,6 @@ export const WorkspaceDetailsPage=()=>{
             let newBoard = []
             let newBoardID = [];
              snapshot.docs.forEach((doc)=>{
-            // // console.log(doc.data())
-            // if (doc.data().visible === 'Private' && !doc.data().members.includes(curr["currUser"].uid)) {
-                
-            //     return;
-            // }
-
-            // if (doc.data().visible === 'Workspace' && !wss.includes(curr["currUser"].uid)) {
-            //     console.log("Tesssss")
-            //     return;
-            // }
-
-            // if (doc.data().status !== 'active') {
-            //     console.log('inactive board')
-            //     return;
-            // }
-            
             newBoard.push({
                 ...doc.data(), id:doc.id
             })
